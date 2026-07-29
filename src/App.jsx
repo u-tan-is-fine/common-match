@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { Html5QrcodeScanner } from "html5-qrcode";
+import { Html5Qrcode } from "html5-qrcode";
 import "./App.css";
 
 const hobbies = [
@@ -41,39 +41,52 @@ function App() {
   const [name, setName] = useState("");
   const [selectedHobbies, setSelectedHobbies] = useState([]);
   const [partnerProfile, setPartnerProfile] = useState(null);
+  
 
   useEffect(() => {
-    console.log("scan page");
     if (page !== "scan") return;
 
-    const scanner = new Html5QrcodeScanner(
-      "reader",
-      {
-        fps: 10,
-        qrbox: 250,
-      },
-      false
+    const html5QrCode = new Html5Qrcode(
+      "reader"
     );
 
-    scanner.render(
-      (decodedText) => {
-        try {
-          const profile = JSON.parse(decodedText);
+    html5QrCode
+      .start(
+        {
+          facingMode: "environment",
+        },
+        {
+          fps: 10,
+          qrbox: {
+            width: 250,
+            height: 250,
+          },
+        },
+        (decodedText) => {
+          try {
+            const profile =
+              JSON.parse(decodedText);
 
-          setPartnerProfile(profile);
+            setPartnerProfile(profile);
 
-          scanner.clear();
-
-          setPage("result");
-        } catch (error) {
-          console.error(error);
+            html5QrCode
+              .stop()
+              .then(() => {
+                setPage("result");
+              });
+          } catch (error) {
+            console.error(error);
+          }
         }
-      },
-      () => {}
-    );
+      )
+      .catch((err) => {
+        console.error(err);
+      });
 
     return () => {
-      scanner.clear().catch(() => {});
+      html5QrCode
+        .stop()
+        .catch(() => {});
     };
   }, [page]);
 
@@ -230,8 +243,15 @@ function App() {
           >
             相手のQRコードを読み取る
           </h2>
+          
+          <p style={{ textAlign: "center" }}>
+            相手のQRコードを
+            枠の中に合わせてください
+          </p>
 
-          <div id="reader"></div>
+          <div className="scanner-container">
+            <div id="reader"></div>
+          </div>
 
           <button
             className="save-button"

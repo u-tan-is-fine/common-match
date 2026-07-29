@@ -182,3 +182,32 @@
     border-right-color: var(--border);
   }
 }
+
+.scanner-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+#reader {
+  width: 100%;
+  max-width: 350px;
+  overflow: hidden;
+  border-radius: 24px;
+}
+
+#reader__scan_region img {
+  display: none;
+}
+
+#reader__dashboard_section_swaplink {
+  display: none !important;
+}
+
+#reader__dashboard button {
+  display: none !important;
+}
+
+#reader__dashboard {
+  display: none !important;
+}
