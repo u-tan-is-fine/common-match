@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
+import { Html5QrcodeScanner } from "html5-qrcode";
 import "./App.css";
 
 const hobbies = [
@@ -39,8 +40,10 @@ function App() {
   const [page, setPage] = useState("profile");
   const [name, setName] = useState("");
   const [selectedHobbies, setSelectedHobbies] = useState([]);
+  const [partnerProfile, setPartnerProfile] = useState(null);
 
   useEffect(() => {
+    console.log("scan page");
     if (page !== "scan") return;
 
     const scanner = new Html5QrcodeScanner(
@@ -74,6 +77,8 @@ function App() {
     };
   }, [page]);
 
+  
+
   const saveProfile = () => {
     const profile = {
       name,
@@ -102,6 +107,11 @@ function App() {
       ]);
     }
   };
+
+  const commonHobbies =
+    partnerProfile?.hobbies?.filter((hobby) =>
+      selectedHobbies.includes(hobby)
+    ) || [];
 
   return (
     <div className="app">
