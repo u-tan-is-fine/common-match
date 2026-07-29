@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { Html5QrcodeScanner } from "html5-qrcode";
+import "./App.css";
 
 const hobbies = [
   "ゲーム",
@@ -9,38 +9,40 @@ const hobbies = [
   "旅行",
   "音楽",
   "スポーツ",
+  "読書",
+  "料理",
+  "カフェ",
+  "ラーメン",
+  "寿司",
+  "猫",
+  "犬",
+  "プログラミング",
+  "テクノロジー",
+  "YouTube",
+  "漫画",
+  "VTuber",
+  "カラオケ",
+  "写真",
+  "ファッション",
+  "車",
+  "バイク",
+  "サッカー",
+  "野球",
+  "キャンプ",
+  "登山",
+  "ボードゲーム",
+  "コーヒー",
+  "お菓子",
 ];
 
 function App() {
+  const [page, setPage] = useState("profile");
   const [name, setName] = useState("");
   const [selectedHobbies, setSelectedHobbies] = useState([]);
-  const [partnerProfile, setPartnerProfile] = useState(null);
 
   useEffect(() => {
-    const savedProfile = localStorage.getItem("profile");
+    if (page !== "scan") return;
 
-    if (savedProfile) {
-      const profile = JSON.parse(savedProfile);
-
-      setName(profile.name || "");
-      setSelectedHobbies(profile.hobbies || []);
-    }
-  }, []);
-
-  const saveProfile = () => {
-    const profile = {
-      name,
-      hobbies: selectedHobbies,
-    };
-
-    localStorage.setItem(
-      "profile",
-      JSON.stringify(profile)
-    );
-
-    alert("プロフィールを保存しました");
-  };
-  useEffect(() => {
     const scanner = new Html5QrcodeScanner(
       "reader",
       {
@@ -58,6 +60,8 @@ function App() {
           setPartnerProfile(profile);
 
           scanner.clear();
+
+          setPage("result");
         } catch (error) {
           console.error(error);
         }
@@ -68,12 +72,28 @@ function App() {
     return () => {
       scanner.clear().catch(() => {});
     };
-  }, []);
+  }, [page]);
+
+  const saveProfile = () => {
+    const profile = {
+      name,
+      hobbies: selectedHobbies,
+    };
+
+    localStorage.setItem(
+      "profile",
+      JSON.stringify(profile)
+    );
+
+    
+  };
 
   const toggleHobby = (hobby) => {
     if (selectedHobbies.includes(hobby)) {
       setSelectedHobbies(
-        selectedHobbies.filter((h) => h !== hobby)
+        selectedHobbies.filter(
+          (h) => h !== hobby
+        )
       );
     } else {
       setSelectedHobbies([
@@ -82,97 +102,165 @@ function App() {
       ]);
     }
   };
-  const commonHobbies =
-    partnerProfile?.hobbies?.filter((hobby) =>
-      selectedHobbies.includes(hobby)
-    ) || [];
+
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>共通点マッチ</h1>
-
-      <div>
-        <p>名前</p>
-
-        <input
-          type="text"
-          value={name}
-          onChange={(e) =>
-            setName(e.target.value)
-          }
-          placeholder="名前を入力"
-        />
+    <div className="app">
+      <div className="header">
+        プロフィール
       </div>
 
-      <h2>趣味</h2>
+      {page === "profile" && (
+        <div className="card">
+          <h2>名前</h2>
 
-      {hobbies.map((hobby) => (
-        <div key={hobby}>
-          <label>
-            <input
-              type="checkbox"
-              checked={selectedHobbies.includes(
-                hobby
-              )}
-              onChange={() =>
-                toggleHobby(hobby)
-              }
-            />
-            {hobby}
-          </label>
+          <input
+            className="input-box"
+            type="text"
+            value={name}
+            onChange={(e) =>
+              setName(e.target.value)
+            }
+            placeholder="名前を入力"
+          />
+
+          <h2 className="section-title">
+            好きなもの・趣味
+          </h2>
+
+          <div className="hobby-grid">
+            {hobbies.map((hobby) => (
+              <label
+                key={hobby}
+                className={`hobby-tag ${
+                  selectedHobbies.includes(
+                    hobby
+                  )
+                    ? "selected"
+                    : ""
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedHobbies.includes(
+                    hobby
+                  )}
+                  onChange={() =>
+                    toggleHobby(hobby)
+                  }
+                />
+                {hobby}
+              </label>
+            ))}
+          </div>
+
+        
+
+          <button
+            className="save-button"
+            onClick={() => {
+              saveProfile();
+              setPage("qr");
+            }}
+          >
+            次へ
+          </button>
         </div>
-      ))}
-
-      <button onClick={saveProfile}>
-        保存
-      </button>
-
-      <hr />
-      <h2>あなたのQRコード</h2>
-
-      <QRCodeSVG
-        value={JSON.stringify({
-          name,
-          hobbies: selectedHobbies,
-        })}
-        size={200}
-      />
-      <h2>相手のQRコードを読み取る</h2>
-
-      <div id="reader"></div>
-
-      <h3>現在の入力内容</h3>
-
-      <p>名前: {name}</p>
-
-      <p>
-        趣味:
-        {selectedHobbies.join("、")}
-      </p>
-
-      
-      {partnerProfile && (
-        <>
-          <hr />
-
-          <h2>マッチ結果</h2>
-
-          <p>相手: {partnerProfile.name}</p>
-
-          <p>
-            共通点:
-            {" "}
-            {commonHobbies.join("、")}
-          </p>
-
-          <p>
-            共通数:
-            {" "}
-            {commonHobbies.length}
-          </p>
-        </>
       )}
-      </div>
 
+      {page === "qr" && (
+        <div className="card">
+          <h2
+            style={{
+              textAlign: "center",
+            }}
+          >
+            あなたのQRコード
+          </h2>
+
+          <div
+            style={{
+              textAlign: "center",
+              marginTop: "30px",
+            }}
+          >
+            <QRCodeSVG
+              value={JSON.stringify({
+                name,
+                hobbies:
+                  selectedHobbies,
+              })}
+              size={260}
+            />
+          </div>
+
+          <button
+            className="save-button"
+            onClick={() => setPage("scan")}
+          >
+            相手のQRを読み取る
+          </button>
+
+          <button
+            className="save-button"
+            onClick={() =>
+              setPage("profile")
+            }
+          >
+            戻る
+          </button>
+        </div>
+      )}
+
+      {page === "scan" && (
+        <div className="card">
+          <h2
+            style={{
+              textAlign: "center",
+            }}
+          >
+            相手のQRコードを読み取る
+          </h2>
+
+          <div id="reader"></div>
+
+          <button
+            className="save-button"
+            onClick={() => setPage("qr")}
+          >
+            戻る
+          </button>
+        </div>
+      )}
+
+      {page === "result" && (
+        <div className="card">
+          <h2>共通点発見！</h2>
+
+          <p>
+            相手：
+            {partnerProfile?.name}
+          </p>
+
+          <div className="hobby-grid">
+            {commonHobbies.map((hobby) => (
+              <div
+                key={hobby}
+                className="hobby-tag selected"
+              >
+                ✅ {hobby}
+              </div>
+            ))}
+          </div>
+
+          <button
+            className="save-button"
+            onClick={() => setPage("profile")}
+          >
+            はじめから
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
