@@ -58,15 +58,19 @@ function App() {
   const [customTags, setCustomTags] = useState([]);
 
   useEffect(() => {
-    const savedProfile = localStorage.getItem("profile");
+    const savedProfile =
+      localStorage.getItem("profile");
 
     if (savedProfile) {
       const profile = JSON.parse(savedProfile);
 
       setName(profile.name || "");
-      const allHobbies = Object.values(
-        hobbyCategories
-      ).flat();
+
+      const savedHobbies =
+        profile.hobbies || [];
+
+      const allHobbies =
+        Object.values(hobbyCategories).flat();
 
       setSelectedHobbies(
         savedHobbies.filter((hobby) =>
@@ -76,7 +80,8 @@ function App() {
 
       setCustomTags(
         savedHobbies.filter(
-          (hobby) => !allHobbies.includes(hobby)
+          (hobby) =>
+            !allHobbies.includes(hobby)
         )
       );
     }
