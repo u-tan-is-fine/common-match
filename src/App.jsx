@@ -54,6 +54,8 @@ function App() {
   const [name, setName] = useState("");
   const [selectedHobbies, setSelectedHobbies] = useState([]);
   const [partnerProfile, setPartnerProfile] = useState(null);
+  const [customTag, setCustomTag] = useState("");
+  const [customTags, setCustomTags] = useState([]);
 
   useEffect(() => {
     const savedProfile = localStorage.getItem("profile");
@@ -62,7 +64,21 @@ function App() {
       const profile = JSON.parse(savedProfile);
 
       setName(profile.name || "");
-      setSelectedHobbies(profile.hobbies || []);
+      const allHobbies = Object.values(
+        hobbyCategories
+      ).flat();
+
+      setSelectedHobbies(
+        savedHobbies.filter((hobby) =>
+          allHobbies.includes(hobby)
+        )
+      );
+
+      setCustomTags(
+        savedHobbies.filter(
+          (hobby) => !allHobbies.includes(hobby)
+        )
+      );
     }
   }, []);
 
@@ -120,7 +136,10 @@ function App() {
   const saveProfile = () => {
     const profile = {
       name,
-      hobbies: selectedHobbies,
+      hobbies: [
+        ...selectedHobbies,
+        ...customTags,
+      ],
     };
 
     localStorage.setItem(
@@ -144,13 +163,39 @@ function App() {
     }
   };
 
+  const addCustomTag = () => {
+    const trimmed = customTag.trim();
+
+    if (!trimmed) return;
+
+    if (
+      selectedHobbies.includes(trimmed) ||
+      customTags.includes(trimmed)
+    ) {
+      return;
+    }
+
+    setCustomTags([
+      ...customTags,
+      trimmed,
+    ]);
+
+    setCustomTag("");
+  };
+
+  const allMyHobbies = [
+    ...selectedHobbies,
+    ...customTags,
+  ];
+
   const commonHobbies =
     Array.isArray(partnerProfile?.hobbies)
       ? partnerProfile.hobbies.filter(
           (hobby) =>
-            selectedHobbies.includes(hobby)
+            allMyHobbies.includes(hobby)
         )
       : [];
+
 
   return (
     <div className="app">
@@ -211,6 +256,53 @@ function App() {
             )
           )}
 
+          <h2 className="section-title">
+            その他
+          </h2>
+
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+              marginBottom: "20px",
+            }}
+          >
+            <input
+              className="input-box"
+              value={customTag}
+              onChange={(e) =>
+                setCustomTag(e.target.value)
+              }
+              placeholder="自由入力"
+            />
+
+            <button
+              className="save-button"
+              onClick={addCustomTag}
+            >
+              追加
+            </button>
+          </div>
+
+          <div className="hobby-grid">
+            {customTags.map((tag) => (
+              <div
+                key={tag}
+                className="hobby-tag selected"
+                onClick={() =>
+                  setCustomTags(
+                    customTags.filter(
+                      (t) => t !== tag
+                    )
+                  )
+                }
+                style={{ cursor: "pointer" }}
+              >
+                ❌ {tag}
+              </div>
+            ))}
+          </div>
+
           <button
             className="save-button"
             onClick={() => {
@@ -238,7 +330,10 @@ function App() {
             <QRCodeSVG
               value={JSON.stringify({
                 name,
-                hobbies: selectedHobbies,
+                hobbies: [
+                  ...selectedHobbies,
+                  ...customTags,
+                ],
               })}
               size={260}
             />
