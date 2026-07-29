@@ -3,38 +3,51 @@ import { QRCodeSVG } from "qrcode.react";
 import { Html5Qrcode } from "html5-qrcode";
 import "./App.css";
 
-const hobbies = [
-  "ゲーム",
-  "アニメ",
-  "映画",
-  "旅行",
-  "音楽",
-  "スポーツ",
-  "読書",
-  "料理",
-  "カフェ",
-  "ラーメン",
-  "寿司",
-  "猫",
-  "犬",
-  "プログラミング",
-  "テクノロジー",
-  "YouTube",
-  "漫画",
-  "VTuber",
-  "カラオケ",
-  "写真",
-  "ファッション",
-  "車",
-  "バイク",
-  "サッカー",
-  "野球",
-  "キャンプ",
-  "登山",
-  "ボードゲーム",
-  "コーヒー",
-  "お菓子",
-];
+const hobbyCategories = {
+  エンタメ: [
+    "ゲーム",
+    "アニメ",
+    "映画",
+    "漫画",
+    "VTuber",
+    "YouTube",
+    "カラオケ",
+  ],
+
+  スポーツ・アウトドア: [
+    "スポーツ",
+    "サッカー",
+    "野球",
+    "キャンプ",
+    "登山",
+  ],
+
+  グルメ: [
+    "料理",
+    "カフェ",
+    "ラーメン",
+    "寿司",
+    "コーヒー",
+    "お菓子",
+  ],
+
+  テクノロジー: [
+    "プログラミング",
+    "テクノロジー",
+  ],
+
+  ライフスタイル: [
+    "旅行",
+    "読書",
+    "写真",
+    "ファッション",
+    "猫",
+    "犬",
+    "車",
+    "バイク",
+    "ボードゲーム",
+  ],
+};
 
 function App() {
   const [page, setPage] = useState("profile");
@@ -142,7 +155,10 @@ function App() {
   return (
     <div className="app">
       <div className="header">
-        プロフィール
+        {page === "profile" && "プロフィール入力"}
+        {page === "qr" && "あなたのQRコード"}
+        {page === "scan" && "QRコード読取"}
+        {page === "result" && "共通点発見！"}
       </div>
 
       {page === "profile" && (
@@ -163,31 +179,37 @@ function App() {
             好きなもの・趣味
           </h2>
 
-          <div className="hobby-grid">
-            {hobbies.map((hobby) => (
-              <label
-                key={hobby}
-                className={`hobby-tag ${
-                  selectedHobbies.includes(
-                    hobby
-                  )
-                    ? "selected"
-                    : ""
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedHobbies.includes(
-                    hobby
-                  )}
-                  onChange={() =>
-                    toggleHobby(hobby)
-                  }
-                />
-                {hobby}
-              </label>
-            ))}
-          </div>
+          {Object.entries(hobbyCategories).map(
+            ([category, hobbies]) => (
+              <div key={category}>
+                <h3>{category}</h3>
+
+                <div className="hobby-grid">
+                  {hobbies.map((hobby) => (
+                    <label
+                      key={hobby}
+                      className={`hobby-tag ${
+                        selectedHobbies.includes(hobby)
+                          ? "selected"
+                          : ""
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedHobbies.includes(
+                          hobby
+                        )}
+                        onChange={() =>
+                          toggleHobby(hobby)
+                        }
+                      />
+                      {hobby}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )
+          )}
 
           <button
             className="save-button"
@@ -274,37 +296,61 @@ function App() {
 
       {page === "result" && (
         <div className="card">
-          <h2>🎉 共通点発見！</h2>
+          <div style={{ textAlign: "center" }}>
+            <h1>🎉</h1>
 
-          <p>
-            相手：
-            {partnerProfile?.name}
-          </p>
+            <h2>共通点発見！</h2>
+
+            <p>
+              {partnerProfile?.name}
+              さんとの共通点
+            </p>
+          </div>
 
           {commonHobbies.length > 0 ? (
-            <div className="hobby-grid">
-              {commonHobbies.map(
-                (hobby) => (
+            <>
+              <div className="hobby-grid">
+                {commonHobbies.map((hobby) => (
                   <div
                     key={hobby}
                     className="hobby-tag selected"
                   >
                     ✅ {hobby}
                   </div>
-                )
-              )}
-            </div>
+                ))}
+              </div>
+
+              <p
+                style={{
+                  textAlign: "center",
+                  marginTop: "20px",
+                  fontWeight: "bold",
+                }}
+              >
+                共通点 {commonHobbies.length} 個
+              </p>
+            </>
           ) : (
-            <p>
-              共通点はまだ見つかりませんでした
-            </p>
+            <div
+              style={{
+                textAlign: "center",
+                marginTop: "20px",
+              }}
+            >
+              <p>
+                まだ共通点は見つかりませんでした
+              </p>
+
+              <p>
+                ぜひ会話して新しい共通点を
+                探してみてください
+              </p>
+            </div>
           )}
 
           <button
             className="save-button"
-            onClick={() =>
-              setPage("profile")
-            }
+            onClick={() => setPage("profile")}
           >
             はじめから
           </button>

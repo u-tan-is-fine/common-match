@@ -211,3 +211,13 @@
 #reader__dashboard {
   display: none !important;
 }
+
+.selected {
+  background: #efb8a4;
+  color: white;
+}
+
+h3 {
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
