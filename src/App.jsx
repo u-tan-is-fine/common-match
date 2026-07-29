@@ -67,13 +67,13 @@ function App() {
             const profile =
               JSON.parse(decodedText);
 
+            console.log(profile);
+
             setPartnerProfile(profile);
 
-            html5QrCode
-              .stop()
-              .then(() => {
-                setPage("result");
-              });
+            setPage("result");
+
+            html5QrCode.stop().catch(() => {});
           } catch (error) {
             console.error(error);
           }
@@ -264,23 +264,9 @@ function App() {
 
       {page === "result" && (
         <div className="card">
-          <h2>共通点発見！</h2>
+          <h2>結果ページ</h2>
 
-          <p>
-            相手：
-            {partnerProfile?.name}
-          </p>
-
-          <div className="hobby-grid">
-            {commonHobbies.map((hobby) => (
-              <div
-                key={hobby}
-                className="hobby-tag selected"
-              >
-                ✅ {hobby}
-              </div>
-            ))}
-          </div>
+          <p>表示テスト</p>
 
           <button
             className="save-button"
