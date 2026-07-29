@@ -41,56 +41,68 @@ function App() {
   const [name, setName] = useState("");
   const [selectedHobbies, setSelectedHobbies] = useState([]);
   const [partnerProfile, setPartnerProfile] = useState(null);
-  
+
+  useEffect(() => {
+    const savedProfile = localStorage.getItem("profile");
+
+    if (savedProfile) {
+      const profile = JSON.parse(savedProfile);
+
+      setName(profile.name || "");
+      setSelectedHobbies(profile.hobbies || []);
+    }
+  }, []);
 
   useEffect(() => {
     if (page !== "scan") return;
 
-    const html5QrCode = new Html5Qrcode(
-      "reader"
-    );
+    let scanner;
 
-    html5QrCode
-      .start(
-        {
-          facingMode: "environment",
-        },
-        {
-          fps: 10,
-          qrbox: {
-            width: 250,
-            height: 250,
+    const startScanner = async () => {
+      try {
+        scanner = new Html5Qrcode("reader");
+
+        await scanner.start(
+          {
+            facingMode: "environment",
           },
-        },
-        (decodedText) => {
-          try {
-            const profile =
-              JSON.parse(decodedText);
+          {
+            fps: 10,
+            qrbox: {
+              width: 250,
+              height: 250,
+            },
+          },
+          async (decodedText) => {
+            try {
+              const profile = JSON.parse(decodedText);
 
-            console.log(profile);
+              setPartnerProfile(profile);
 
-            setPartnerProfile(profile);
+              await scanner.stop();
 
-            setPage("result");
-
-            html5QrCode.stop().catch(() => {});
-          } catch (error) {
-            console.error(error);
+              setPage("result");
+            } catch (err) {
+              console.error(err);
+            }
           }
-        }
-      )
-      .catch((err) => {
+        );
+      } catch (err) {
         console.error(err);
-      });
+      }
+    };
+
+    startScanner();
 
     return () => {
-      html5QrCode
-        .stop()
-        .catch(() => {});
+      if (
+        scanner &&
+        scanner.isScanning
+      ) {
+        scanner.stop().catch(() => {});
+      }
     };
   }, [page]);
-
-  
 
   const saveProfile = () => {
     const profile = {
@@ -102,8 +114,6 @@ function App() {
       "profile",
       JSON.stringify(profile)
     );
-
-    
   };
 
   const toggleHobby = (hobby) => {
@@ -122,9 +132,12 @@ function App() {
   };
 
   const commonHobbies =
-    partnerProfile?.hobbies?.filter((hobby) =>
-      selectedHobbies.includes(hobby)
-    ) || [];
+    Array.isArray(partnerProfile?.hobbies)
+      ? partnerProfile.hobbies.filter(
+          (hobby) =>
+            selectedHobbies.includes(hobby)
+        )
+      : [];
 
   return (
     <div className="app">
@@ -176,8 +189,6 @@ function App() {
             ))}
           </div>
 
-        
-
           <button
             className="save-button"
             onClick={() => {
@@ -192,11 +203,7 @@ function App() {
 
       {page === "qr" && (
         <div className="card">
-          <h2
-            style={{
-              textAlign: "center",
-            }}
-          >
+          <h2 style={{ textAlign: "center" }}>
             あなたのQRコード
           </h2>
 
@@ -209,8 +216,7 @@ function App() {
             <QRCodeSVG
               value={JSON.stringify({
                 name,
-                hobbies:
-                  selectedHobbies,
+                hobbies: selectedHobbies,
               })}
               size={260}
             />
@@ -218,7 +224,9 @@ function App() {
 
           <button
             className="save-button"
-            onClick={() => setPage("scan")}
+            onClick={() =>
+              setPage("scan")
+            }
           >
             相手のQRを読み取る
           </button>
@@ -236,15 +244,15 @@ function App() {
 
       {page === "scan" && (
         <div className="card">
-          <h2
+          <h2 style={{ textAlign: "center" }}>
+            相手のQRコードを読み取る
+          </h2>
+
+          <p
             style={{
               textAlign: "center",
             }}
           >
-            相手のQRコードを読み取る
-          </h2>
-          
-          <p style={{ textAlign: "center" }}>
             相手のQRコードを
             枠の中に合わせてください
           </p>
@@ -255,7 +263,9 @@ function App() {
 
           <button
             className="save-button"
-            onClick={() => setPage("qr")}
+            onClick={() =>
+              setPage("qr")
+            }
           >
             戻る
           </button>
@@ -264,13 +274,37 @@ function App() {
 
       {page === "result" && (
         <div className="card">
-          <h2>結果ページ</h2>
+          <h2>🎉 共通点発見！</h2>
 
-          <p>表示テスト</p>
+          <p>
+            相手：
+            {partnerProfile?.name}
+          </p>
+
+          {commonHobbies.length > 0 ? (
+            <div className="hobby-grid">
+              {commonHobbies.map(
+                (hobby) => (
+                  <div
+                    key={hobby}
+                    className="hobby-tag selected"
+                  >
+                    ✅ {hobby}
+                  </div>
+                )
+              )}
+            </div>
+          ) : (
+            <p>
+              共通点はまだ見つかりませんでした
+            </p>
+          )}
 
           <button
             className="save-button"
-            onClick={() => setPage("profile")}
+            onClick={() =>
+              setPage("profile")
+            }
           >
             はじめから
           </button>
