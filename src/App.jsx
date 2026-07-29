@@ -50,7 +50,7 @@ const hobbyCategories = {
 };
 
 function App() {
-  const [page, setPage] = useState("profile");
+  const [page, setPage] = useState("loading");
   const [name, setName] = useState("");
   const [selectedHobbies, setSelectedHobbies] = useState([]);
   const [partnerProfile, setPartnerProfile] = useState(null);
@@ -62,7 +62,8 @@ function App() {
       localStorage.getItem("profile");
 
     if (savedProfile) {
-      const profile = JSON.parse(savedProfile);
+      const profile =
+        JSON.parse(savedProfile);
 
       setName(profile.name || "");
 
@@ -84,6 +85,11 @@ function App() {
             !allHobbies.includes(hobby)
         )
       );
+
+      // ここ重要
+      setPage("qr");
+    } else {
+      setPage("profile");
     }
   }, []);
 
@@ -201,7 +207,15 @@ function App() {
         )
       : [];
 
-
+  if (page === "loading") {
+    return (
+      <div className="app">
+        <div className="card">
+          読み込み中...
+        </div>
+      </div>
+    );
+  }      
   return (
     <div className="app">
       <div className="header">
@@ -359,7 +373,7 @@ function App() {
               setPage("profile")
             }
           >
-            戻る
+            プロフィール編集
           </button>
         </div>
       )}
