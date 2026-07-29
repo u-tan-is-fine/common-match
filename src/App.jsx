@@ -155,7 +155,7 @@ function App() {
   return (
     <div className="app">
       <div className="header">
-        {page === "profile" && "プロフィール入力"}
+        {page === "profile" && "プロフィール"}
         {page === "qr" && "あなたのQRコード"}
         {page === "scan" && "QRコード読取"}
         {page === "result" && "共通点発見！"}
